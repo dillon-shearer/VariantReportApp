@@ -1,4 +1,4 @@
-#  variant_reports.py
+# variant_reports.py
 # C: Nov 23, 2021
 # M: Feb  3, 2022
 # A: Leandro Lima <leandro.lima@gladstone.ucsf.edu>
@@ -23,8 +23,11 @@ from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QVBoxLayout, QLabel, QLineEdit,
     QRadioButton, QCheckBox, QTextEdit, QPushButton, QGroupBox, QButtonGroup,
     QWidget, QMessageBox, QGraphicsDropShadowEffect, QToolTip,
-    QAction, QMessageBox
+    QAction, QHBoxLayout, QStackedWidget, QScrollArea, QSizePolicy
 )
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
+import matplotlib.pyplot as plt  # Importing pyplot for color maps
 
 def resource_path(relative_path):
     """ Get the absolute path to the resource """
@@ -43,7 +46,7 @@ class VariantReportApp(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle(f"Variant Report Tool v{__version__}")
-        self.setGeometry(100, 100, 1200, 800)  # Adjust window size
+        self.setGeometry(100, 100, 1400, 900)  # Increased window size for better layout
 
         # Set the logo (make sure to replace './images/logo.png' with the actual path to your logo)
         self.setWindowIcon(QIcon(resource_path('./images/logo.png')))  # Logo file path
@@ -58,7 +61,7 @@ class VariantReportApp(QMainWindow):
         # Create the menu bar
         menubar = self.menuBar()  # Initialize the menu bar
 
-         # Apply styles to the menu bar and menu items
+        # Apply styles to the menu bar and menu items
         menubar.setStyleSheet("""
             QMenuBar {
                 background: transparent;  /* Makes the background transparent */
@@ -104,20 +107,25 @@ class VariantReportApp(QMainWindow):
         doc_action.triggered.connect(self.show_help_dialog)
         help_menu.addAction(doc_action)
 
-        # Main widget and layout
-        self.central_widget = QWidget()
-        self.central_widget.setObjectName("centralwidget")
-        self.setCentralWidget(self.central_widget)
-        
-        # Outer layout to center the purple box
-        outer_layout = QVBoxLayout(self.central_widget)
-        outer_layout.setAlignment(Qt.AlignCenter)
-        
+        # Initialize QStackedWidget to manage multiple pages
+        self.stacked_widget = QStackedWidget()
+        self.setCentralWidget(self.stacked_widget)
+
+        # Create pages
+        self.create_report_page()
+        self.create_summary_page()
+
+    def create_report_page(self):
+        # Main widget and layout for Report Generation Page
+        self.report_page = QWidget()
+        report_layout = QVBoxLayout(self.report_page)
+        report_layout.setAlignment(Qt.AlignCenter)
+
         # Purple container (for the form)
         purple_container = QWidget()
         purple_container.setObjectName("purple_container")
         purple_layout = QVBoxLayout(purple_container)
-        purple_layout.setContentsMargins(30, 30, 30, 30)  # Padding inside the purple box
+        purple_layout.setContentsMargins(40, 40, 40, 40)  # Increased padding inside the purple box
 
         # Apply shadow effect to purple container
         shadow = QGraphicsDropShadowEffect()
@@ -129,11 +137,11 @@ class VariantReportApp(QMainWindow):
         # Form elements
         title_section_label = QLabel('ALS WGS SNV Report Generator')
         title_section_label.setAlignment(Qt.AlignCenter)
-        title_section_label.setStyleSheet("font-size: 30px; margin-bottom: 20px; color: white; font-weight: bold;")
+        title_section_label.setStyleSheet("font-size: 30px; margin-bottom: 25px; color: white; font-weight: bold;")
         purple_layout.addWidget(title_section_label)
 
         # Bold "Report title:"
-        title_label = QLabel("Report title:")
+        title_label = QLabel("Report title")
         title_label.setAlignment(Qt.AlignLeft)
         title_label.setStyleSheet("color: white; font-weight: bold;")
         purple_layout.addWidget(title_label)
@@ -265,7 +273,7 @@ class VariantReportApp(QMainWindow):
 
         # Add Generate Report Button
         self.generate_button = QPushButton("Create report")
-        self.generate_button.setMaximumWidth(200)
+        self.generate_button.setMaximumWidth(250)  # Slightly larger button
         purple_layout.addWidget(self.generate_button, alignment=Qt.AlignCenter)
 
         # Add spinning indicator
@@ -276,15 +284,15 @@ class VariantReportApp(QMainWindow):
         self.spinner_label.setVisible(False)  # Hidden by default
         purple_layout.addWidget(self.spinner_label)
 
-        # Add purple container to the outer layout
-        outer_layout.addWidget(purple_container)
+        # Add purple container to the report layout
+        report_layout.addWidget(purple_container)
 
         # Style the purple container
         purple_container.setStyleSheet("""
             QWidget#purple_container {
                 background-color: #663366;
                 border-radius: 15px;
-                max-width: 800px;  /* Max width of the purple box */
+                max-width: 900px;  /* Increased max width for better layout */
             }
             QLabel, QRadioButton, QCheckBox, QGroupBox {
                 color: white;
@@ -299,8 +307,9 @@ class VariantReportApp(QMainWindow):
             QPushButton {
                 background-color: rgba(153, 102, 153, 0.9);
                 color: white;
-                padding: 10px;
+                padding: 12px;  /* Increased padding for a larger button */
                 border-radius: 5px;
+                font-size: 16px;  /* Increased font size for better readability */
             }
             QPushButton:hover {
                 background-color: rgba(153, 102, 153, 1);
@@ -309,6 +318,131 @@ class VariantReportApp(QMainWindow):
 
         # Connect Generate Report button
         self.generate_button.clicked.connect(self.generate_report)
+
+        # Add the report page to the stacked widget
+        self.stacked_widget.addWidget(self.report_page)
+
+    def create_summary_page(self):
+        # Summary Visuals Page
+        self.summary_page = QWidget()
+        summary_layout = QVBoxLayout(self.summary_page)
+        summary_layout.setAlignment(Qt.AlignCenter)
+
+        # Purple container for summary (similar to report page)
+        purple_container = QWidget()
+        purple_container.setObjectName("purple_container_summary")
+        purple_layout = QVBoxLayout(purple_container)
+        purple_layout.setContentsMargins(40, 40, 40, 40)  # Increased padding inside the purple box
+
+        # Apply shadow effect to purple container
+        shadow = QGraphicsDropShadowEffect()
+        shadow.setBlurRadius(15)
+        shadow.setOffset(0, 0)
+        shadow.setColor(Qt.black)
+        purple_container.setGraphicsEffect(shadow)
+
+        # Title
+        summary_title = QLabel("Report Summary")
+        summary_title.setAlignment(Qt.AlignCenter)
+        summary_title.setStyleSheet("font-size: 28px; margin-bottom: 25px; color: white; font-weight: bold;")
+        purple_layout.addWidget(summary_title)
+
+        # Applied Filters Section
+        filters_label = QLabel("Applied Filters:")
+        filters_label.setStyleSheet("font-size: 18px; color: white; font-weight: bold;")
+        purple_layout.addWidget(filters_label)
+
+        self.applied_filters_text = QLabel()
+        self.applied_filters_text.setStyleSheet("font-size: 16px; color: white;")
+        self.applied_filters_text.setWordWrap(True)
+        purple_layout.addWidget(self.applied_filters_text)
+
+        # Summary Statistics Labels
+        self.total_variants_label = QLabel("Total Variants: ")
+        self.total_variants_label.setStyleSheet("font-size: 18px; color: white;")
+        purple_layout.addWidget(self.total_variants_label)
+
+        self.total_samples_label = QLabel("Total Samples: ")
+        self.total_samples_label.setStyleSheet("font-size: 18px; color: white;")
+        purple_layout.addWidget(self.total_samples_label)
+
+        self.num_genes_label = QLabel("Number of Genes: ")
+        self.num_genes_label.setStyleSheet("font-size: 18px; color: white;")
+        purple_layout.addWidget(self.num_genes_label)
+
+        # Variant Types Pie Chart
+        self.variant_types_canvas = FigureCanvas(Figure(figsize=(6, 5), facecolor='#663366'))  # Set figure facecolor to purple
+        purple_layout.addWidget(self.variant_types_canvas)
+        self.variant_types_ax = self.variant_types_canvas.figure.subplots()
+        self.variant_types_ax.set_facecolor('#663366')  # Set axes facecolor to purple
+
+        # Remove spines to eliminate white lines
+        for spine in self.variant_types_ax.spines.values():
+            spine.set_visible(False)
+
+        # Set the title with white color
+        self.variant_types_ax.set_title("Variant Types Distribution", fontsize=16, color='white')
+
+        # Initialize annotation for hover-over
+        self.annotation = self.variant_types_ax.annotate(
+            "",
+            xy=(0,0),
+            xytext=(20,20),
+            textcoords="offset points",
+            bbox=dict(boxstyle="round", fc="#663366"),  # Match annotation box color to purple
+            arrowprops=dict(arrowstyle="->", color="white")  # Arrow color white for visibility
+        )
+        self.annotation.set_visible(False)
+
+        # Set the background color of the FigureCanvas widget to purple
+        self.variant_types_canvas.setStyleSheet("background-color: #663366;")
+
+        # Connect the motion_notify_event to the hover function
+        self.variant_types_canvas.mpl_connect("motion_notify_event", self.on_hover)
+
+        # Buttons at the bottom
+        button_layout = QHBoxLayout()
+
+        self.create_another_button = QPushButton("Create Another Report")
+        self.create_another_button.setMaximumWidth(250)  # Increased button size
+        self.create_another_button.clicked.connect(self.reset_form)
+
+        self.exit_button = QPushButton("Exit")
+        self.exit_button.setMaximumWidth(150)  # Increased button size
+        self.exit_button.clicked.connect(QApplication.quit)
+
+        button_layout.addStretch()
+        button_layout.addWidget(self.create_another_button)
+        button_layout.addWidget(self.exit_button)
+
+        purple_layout.addLayout(button_layout)
+
+        # Style the summary container
+        purple_container.setStyleSheet("""
+            QWidget#purple_container_summary {
+                background-color: #663366;
+                border-radius: 15px;
+                max-width: 1000px;  /* Increased max width for better layout */
+            }
+            QLabel, QPushButton {
+                color: white;
+            }
+            QPushButton {
+                background-color: rgba(153, 102, 153, 0.9);
+                padding: 12px;  /* Increased padding for larger buttons */
+                border-radius: 5px;
+                font-size: 16px;
+            }
+            QPushButton:hover {
+                background-color: rgba(153, 102, 153, 1);
+            }
+        """)
+
+        # Add purple container to the summary layout
+        summary_layout.addWidget(purple_container)
+
+        # Add the summary page to the stacked widget
+        self.stacked_widget.addWidget(self.summary_page)
 
     def set_background_image(self):
         # Load the image
@@ -336,16 +470,27 @@ class VariantReportApp(QMainWindow):
         if self.gene_button_group.checkedButton().text() == "ALS Genes ⓘ":
             genes_list = "ALSgenes"
             custom_genes = None
+            genes_selected = "ALS Genes"
         elif self.gene_button_group.checkedButton().text() == "ACMG Genes ⓘ":
             genes_list = "ACMGgenes"
             custom_genes = None
+            genes_selected = "ACMG Genes"
         else:
             genes_list = "textboxgenes"
             custom_genes = self.custom_genes_text.toPlainText()
+            genes_selected = f"Custom Genes: {custom_genes.replace(',', ', ')}"
 
         answer_als = self.answer_als_checkbox.isChecked()
+        samples_selected = "AnswerALS (937 whole genomes)" if answer_als else "No AnswerALS samples selected"
+
         synonymous_snvs = self.synonymous_checkbox.isChecked()
+        synonymous_selected = "Included" if synonymous_snvs else "Excluded"
+
+        include_up_down = self.include_up_down_checkbox.isChecked()
+        up_down_selected = "Included" if include_up_down else "Excluded"
+
         eur_selected = self.eur_checkbox.isChecked()
+        ethnicity_selected = "EUR ancestry >= 85%" if eur_selected else "All ethnicities"
 
         # Disable the button while processing
         self.generate_button.setEnabled(False)
@@ -392,24 +537,24 @@ class VariantReportApp(QMainWindow):
         # Start the thread
         self.thread.start()
 
-    def on_finished(self, file_path):
+    def on_finished(self, file_path, summary_data):
         # Stop and hide the spinner
         self.spinner_movie.stop()
         self.spinner_label.setVisible(False)
         
         logging.info(f"Report generated successfully: {file_path}")
         
-        reply = QMessageBox.question(
-            self, "Report Generated",
-            f"The report was successfully generated and saved to:\n\n{file_path}\n\nWould you like to create another report?",
-            QMessageBox.Yes | QMessageBox.No
-        )
-        if reply == QMessageBox.Yes:
-            # Reset the form
-            self.reset_form()
-        else:
-            # Close the application
-            QApplication.quit()
+        # Store summary data for visualization
+        self.summary_data = summary_data
+
+        # Update the summary visuals
+        self.update_summary_visuals()
+
+        # Switch to the summary page
+        self.stacked_widget.setCurrentWidget(self.summary_page)
+
+        # Re-enable the generate button
+        self.generate_button.setEnabled(True)
 
     def on_error(self, error_message):
         # Stop and hide the spinner on error
@@ -422,6 +567,12 @@ class VariantReportApp(QMainWindow):
         self.generate_button.setEnabled(True)
 
     def reset_form(self):
+        # Switch back to the report page
+        self.stacked_widget.setCurrentWidget(self.report_page)
+        # Reset the form
+        self._reset_form()
+
+    def _reset_form(self):
         # Reset the title input
         self.title_input.clear()
         # Reset the gene selection
@@ -436,6 +587,7 @@ class VariantReportApp(QMainWindow):
         self.answer_als_checkbox.setChecked(True)
         self.synonymous_checkbox.setChecked(False)
         self.eur_checkbox.setChecked(False)
+        self.include_up_down_checkbox.setChecked(False)
         # Enable the generate button
         self.generate_button.setEnabled(True)
 
@@ -535,10 +687,114 @@ class VariantReportApp(QMainWindow):
         msg.setText(help_text)
         msg.exec_()
 
-# Worker class for running the report generation in a separate thread
+    def update_summary_visuals(self):
+        """
+        Update the summary visuals using the summary_data provided by the worker.
+        """
+        if not hasattr(self, 'summary_data') or not self.summary_data:
+            logging.error("No summary data available to display.")
+            return
+
+        # Update applied filters text
+        applied_filters = self.summary_data.get('applied_filters', {})
+        filters_text = ""
+        if applied_filters.get('report_title'):
+            filters_text += f"<b>Report Title:</b> {applied_filters['report_title']}<br>"
+        if applied_filters.get('genes_selected'):
+            filters_text += f"<b>Gene Selection:</b> {applied_filters['genes_selected']}<br>"
+        if applied_filters.get('samples_selected'):
+            filters_text += f"<b>Samples Selected:</b> {applied_filters['samples_selected']}<br>"
+        if applied_filters.get('synonymous_selected'):
+            filters_text += f"<b>Synonymous SNVs:</b> {applied_filters['synonymous_selected']}<br>"
+        if applied_filters.get('up_down_selected'):
+            filters_text += f"<b>Upstream/Downstream Variants:</b> {applied_filters['up_down_selected']}<br>"
+        if applied_filters.get('ethnicity_selected'):
+            filters_text += f"<b>Ethnicity Filter:</b> {applied_filters['ethnicity_selected']}<br>"
+
+        self.applied_filters_text.setText(filters_text)
+
+        # Update summary labels
+        self.total_variants_label.setText(f"Total Variants: {self.summary_data.get('total_variants', 0)}")
+        self.total_samples_label.setText(f"Total Samples: {self.summary_data.get('total_samples', 0)}")
+        self.num_genes_label.setText(f"Number of Genes: {self.summary_data.get('num_genes', 0)}")
+
+        # Update variant types pie chart
+        variant_types = self.summary_data.get('variant_types', {})
+        if variant_types:
+            self.variant_types_ax.clear()
+            labels = list(variant_types.keys())
+            sizes = list(variant_types.values())
+            colors = plt.cm.Paired.colors[:len(labels)]  # Ensure enough colors
+
+            # Set the background color of the axes to match the page
+            self.variant_types_ax.set_facecolor('#663366')
+
+            # Set the background color of the figure to match the page
+            self.variant_types_canvas.figure.set_facecolor('#663366')
+
+            # Create pie chart without labels
+            wedges, _ = self.variant_types_ax.pie(sizes, labels=None, startangle=140, colors=colors)
+            self.variant_types_ax.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+            self.variant_types_ax.set_title("Variant Types Distribution", fontsize=16, color='white')  # Set title color to white
+
+            # Adjust layout to make space for the legend below
+            self.variant_types_canvas.figure.subplots_adjust(bottom=0.35)  # Increased bottom margin
+
+            # Add legend centered below the pie chart with white background
+            legend = self.variant_types_ax.legend(
+                wedges, labels,
+                title="Variant Types",
+                loc="upper center",
+                bbox_to_anchor=(0.5, -0.25),  # Positioned below the pie chart
+                ncol=min(len(labels), 3),    # Adjust number of columns based on number of labels
+                fontsize='small'  # Smaller font size
+            )
+            legend.get_title().set_fontsize('small')  # Smaller font size for legend title
+
+            # Make legend background white
+            frame = legend.get_frame()
+            frame.set_facecolor('white')  # Set legend background to white
+            frame.set_edgecolor('white')  # Set frame edge to white
+
+            # Store wedges for hover functionality
+            self.wedges = wedges
+            self.sizes = sizes
+            self.labels = labels
+
+            # Apply tight layout to ensure everything fits
+            self.variant_types_canvas.figure.tight_layout()
+
+            self.variant_types_canvas.draw()
+        else:
+            # If no variant types data, hide the chart
+            self.variant_types_canvas.hide()
+
+    def on_hover(self, event):
+        """Show annotation when hovering over a pie slice."""
+        if not hasattr(self, 'wedges'):
+            return
+
+        vis = self.annotation.get_visible()
+        for wedge, size, label in zip(self.wedges, self.sizes, self.labels):
+            contains, attr = wedge.contains(event)
+            if contains:
+                # Calculate the angle of the mouse position
+                angle = (wedge.theta2 - wedge.theta1)/2. + wedge.theta1
+                x = wedge.r * 0.7 * np.cos(np.deg2rad(angle))
+                y = wedge.r * 0.7 * np.sin(np.deg2rad(angle))
+                self.annotation.xy = (x, y)
+                text = f"{label}: {size}"
+                self.annotation.set_text(text)
+                self.annotation.set_visible(True)
+                self.variant_types_canvas.draw_idle()
+                return
+        if vis:
+            self.annotation.set_visible(False)
+            self.variant_types_canvas.draw_idle()
+
 class ReportGeneratorWorker(QObject):
-    finished = pyqtSignal(str)  # Signal to emit when finished, with file path
-    error = pyqtSignal(str)     # Signal to emit if there is an error
+    finished = pyqtSignal(str, dict)  # Signal to emit when finished, with file path and summary data
+    error = pyqtSignal(str)           # Signal to emit if there is an error
 
     def __init__(self, report_title, genes_list, answer_als, synonymous_snvs, eur_selected, custom_genes, timestamp):
         super().__init__()
@@ -553,12 +809,12 @@ class ReportGeneratorWorker(QObject):
     @pyqtSlot()
     def run(self):
         try:
-            file_path = generate_report_logic(
+            file_path, summary_data = generate_report_logic(
                 self.report_title, self.genes_list, self.answer_als,
                 self.synonymous_snvs, self.eur_selected,
                 self.custom_genes, self.timestamp
             )
-            self.finished.emit(file_path)
+            self.finished.emit(file_path, summary_data)
         except Exception as e:
             self.error.emit(str(e))
 
@@ -572,16 +828,15 @@ def generate_report_logic(report_title, genes_list, answer_als, synonymous_snvs,
         # Load metadata
         logging.info("Fetching metadata...")
         aals_metadata = get_metadata()
-        aals_samples_from_metadata = set(aals_metadata['ExternalSubjectId'][aals_metadata['Project'].str.contains('Answer ALS')])
-        all_ctrls = set(aals_metadata['ExternalSubjectId'][aals_metadata['Subject Group'].str.contains('Neurological Control')])
-        all_cases = set(aals_metadata['ExternalSubjectId'][~aals_metadata['Subject Group'].str.contains('Control')])
+        aals_samples_from_metadata = set(aals_metadata['ExternalSubjectId'][aals_metadata['Project'].str.contains('Answer ALS', na=False)])
+        all_ctrls = set(aals_metadata['ExternalSubjectId'][aals_metadata['Subject Group'].str.contains('Neurological Control', na=False)])
+        all_cases = set(aals_metadata['ExternalSubjectId'][~aals_metadata['Subject Group'].str.contains('Control', na=False)])
 
         if eur_selected:
             logging.info("Applying European ancestry filter...")
             # Since the column is in decimals (0.xx), use 0.85 instead of 85
             europeans = set(aals_metadata['ExternalSubjectId'][aals_metadata['pct_european'] >= 0.85])
             aals_samples_from_metadata = aals_samples_from_metadata.intersection(europeans)
-
 
         # Load and concatenate chunks of the variant file
         logging.info(f"Reading variant file in chunks from: {variant_file}")
@@ -652,7 +907,7 @@ def generate_report_logic(report_title, genes_list, answer_als, synonymous_snvs,
         # ClinVar, Intervar, and Damaging Variants
         clinvar_exon = exonic_vars_df[exonic_vars_df['ClinVar sig (CLINSIG)'].str.contains('athogenic', na=False)]
         intervar_exon = exonic_vars_df[exonic_vars_df['ACMG variant'].str.contains('athogenic', na=False)]
-        insilico_exon = exonic_vars_df[exonic_vars_df[['in silico Predictions']].apply(dmg_tools, axis=1) >= 6]
+        insilico_exon = exonic_vars_df[exonic_vars_df['in silico Predictions'].apply(dmg_tools) >= 6]
 
         combinations.update({
             'ClinVar': {'cases': list(all_cases), 'ctrls': list(all_ctrls), 'data': clinvar_exon},
@@ -665,14 +920,16 @@ def generate_report_logic(report_title, genes_list, answer_als, synonymous_snvs,
 
         # Write report to Excel
         xls_path = f"./reports/{report_title.replace(' ', '_')}_{timestamp}.xlsx"
-        writer = pd.ExcelWriter(xls_path)
+        writer = pd.ExcelWriter(xls_path, engine='xlsxwriter')
 
         # Write the ReadMe sheet first
         logging.info("Writing 'READ ME' sheet...")
         readme_text = make_readme(genes_list, genes, combinations, anno_cols_from_report, report_title)
-        readme_options = {'width': 1000, 'height': 1000, 'font': {'name': 'Helvetica', 'size': 16}}
-        writer.sheets['READ ME'] = writer.book.add_worksheet('READ ME')
-        writer.sheets['READ ME'].insert_textbox(1, 1, readme_text, readme_options)
+        workbook = writer.book
+        worksheet = workbook.add_worksheet('READ ME')
+        writer.sheets['READ ME'] = worksheet
+        # Write ReadMe text with formatting
+        worksheet.write('A1', readme_text)
 
         # Write all combination sheets
         for sheet_name in combinations.keys():
@@ -684,13 +941,30 @@ def generate_report_logic(report_title, genes_list, answer_als, synonymous_snvs,
         logging.info("Writing Data Dictionary...")
         with open(data_dictionary_file, 'r', encoding='utf-8') as f:
             data_dict = f.read()
-        writer.sheets['Data dictionary'] = writer.book.add_worksheet('Data dictionary')
-        data_dict_options = {'width': 1000, 'height': 3000, 'font': {'name': 'Helvetica', 'size': 12}}
-        writer.sheets['Data dictionary'].insert_textbox(1, 1, data_dict, data_dict_options)
+        worksheet = workbook.add_worksheet('Data dictionary')
+        writer.sheets['Data dictionary'] = worksheet
+        worksheet.write('A1', data_dict)
 
         writer.close()
         logging.info(f"Report generated successfully at {xls_path}")
-        return xls_path
+
+        # Prepare summary data for visualization
+        summary_data = {
+            'total_variants': len(exonic_vars_df),
+            'total_samples': len(metadata_samples),
+            'num_genes': len(genes),
+            'variant_types': exonic_vars_df['ExonicFunc'].value_counts().to_dict(),
+            'applied_filters': {
+                'report_title': report_title,
+                'genes_selected': "ALS Genes" if genes_list == "ALSgenes" else ("ACMG Genes" if genes_list == "ACMGgenes" else f"Custom Genes: {custom_genes.replace(',', ', ')}"),
+                'samples_selected': "AnswerALS (937 whole genomes)" if answer_als else "No AnswerALS samples selected",
+                'synonymous_selected': "Included" if synonymous_snvs else "Excluded",
+                'ethnicity_selected': "EUR ancestry >= 85%" if eur_selected else "All ethnicities"
+            }
+            # Add more summary metrics as needed
+        }
+
+        return xls_path, summary_data
 
     except Exception as e:
         logging.error(f"Error during report generation: {e}")
@@ -703,7 +977,8 @@ def get_genes(gene_list, custom_genes=None):
     elif gene_list == 'ACMGgenes':
         return open(acmg_gene_file).read().splitlines()
     elif gene_list == 'textboxgenes':
-        return custom_genes.split()
+        # Split by comma or newline and strip whitespace
+        return [gene.strip() for gene in custom_genes.replace(',', '\n').splitlines() if gene.strip()]
 
 def get_metadata():
     return pd.read_csv(metadata_file)
@@ -720,10 +995,13 @@ def get_vars_in_selected_samples(vars_df, anno_cols_from_report, samples=[]):
     return vars_df[condition_vars > 0][anno_cols_from_report + samples]
 
 def dmg_tools(cell):
-    cell = cell.iloc[0]
-    if cell == 'No information':
-        return None
-    return int(cell.split(' DMG')[0])
+    try:
+        cell = cell
+        if pd.isna(cell):
+            return 0
+        return int(cell.split(' DMG')[0])
+    except:
+        return 0
 
 def make_readme(genes_list_name, genes, combinations, anno_cols_from_report, report_title):
     SF_now = datetime.datetime.now(pytz.timezone('America/Los_Angeles'))
@@ -732,7 +1010,7 @@ def make_readme(genes_list_name, genes, combinations, anno_cols_from_report, rep
     readme_text = f'AnswerALS WGS data\n\nReport title: {report_title}\n\n'
     readme_text += f'Genes: {genes_list_name}, variants in {len(genes)} genes.\n\n'
     readme_text += 'No filters on frequency were applied.\n\n'
-    readme_text += '\n** Number of samples and variants by sheet **\n\n'
+    readme_text += '** Number of samples and variants by sheet **\n\n'
 
     for comb, samples in combinations.items():
         if comb != 'READ ME' and comb != 'Data dictionary':
@@ -746,7 +1024,7 @@ def make_readme(genes_list_name, genes, combinations, anno_cols_from_report, rep
     readme_text += f'\nReport created on {SF_now_formatted} PST.\n'
     readme_text += 'Authors: Julia Kaye, Leandro Lima, Stacia Wyman\n'
     readme_text += 'For more information, please contact:\n\tTerri Thompson <terri@onpointsci.com>'
-    
+
     return readme_text
 
 
@@ -754,7 +1032,7 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
 
     # Set global font for the entire application
-    font = QFont("Arial", 18)  # Specify the font name and size
+    font = QFont("Arial", 14)  # Adjusted font size for better readability
     app.setFont(font)
 
     # Set the global application icon for the taskbar
