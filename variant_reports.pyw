@@ -15,6 +15,7 @@ import numpy as np
 import datetime, pytz
 import os
 import logging
+import atexit
 from PyQt5.QtCore import (
     Qt, QObject, pyqtSignal, pyqtSlot, QThread, QSize
 )
@@ -597,6 +598,7 @@ class VariantReportApp(QMainWindow):
             <img src='{}' alt='logo' width='100' height='100'/>
             <h2 style="color: black;"><b><u>Variant Report Tool v{}</b></u></h2>
             <p style="text-align: left;">Authors:</p>
+            <p style="text-align: left;"><strong>Julia Kaye</strong></p>
             <p style="text-align: left;"><strong>Leandro Lima</strong></p>
             <p style="text-align: left;"><strong>Stacia Wyman</strong></p>
             <p style="text-align: left;"><strong>Dillon Shearer</strong></p>
@@ -1088,9 +1090,19 @@ def make_readme(genes_list_name, genes, combinations, anno_cols_from_report, rep
 
     return readme_text
 
+def close_terminal():
+    if sys.platform == "win32":
+        os.system("exit")
+    elif sys.platform == "darwin" or sys.platform.startswith('linux'):
+        os.system("kill -9 $$")
 
 if __name__ == "__main__":
+    atexit.register(close_terminal)
+    
     app = QApplication(sys.argv)
+
+    # Set the application name
+    app.setApplicationName("Variant Report Tool")
 
     # Set global font for the entire application
     font = QFont("Arial", 14)  # Adjusted font size for better readability
