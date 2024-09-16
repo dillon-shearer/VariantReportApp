@@ -28,7 +28,7 @@ from PyQt5.QtWidgets import (
 )
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-import matplotlib.pyplot as plt  # Importing pyplot for color maps
+import matplotlib.pyplot as plt
 
 def resource_path(relative_path):
     """ Get the absolute path to the resource """
