@@ -19,6 +19,27 @@ The application features a user-friendly graphical interface built with PyQt5. I
 1. **Report Generation:** Users can input the report title, choose gene sets (ALS Genes, ACMG Genes, or custom), select sample types, and apply various filters like synonymous SNVs and ethnicity.
 2. **Summary Page:** Displays the applied filters and summary statistics, such as total variants, total samples, and the number of genes. A pie chart visualizes the variant type distribution.
 
+## Features
+
+This application includes the following features:
+
+1. **GUI Interface**: A fully interactive PyQt5-based graphical user interface (GUI), replacing the previous Flask web-based version. The application now provides a more dynamic and responsive desktop experience.
+2. **Cross-Compatibility Development**: The application is designed to work seamlessly on both Windows and macOS operating systems.
+3. **Spinning Indicator**: A spinner is displayed to indicate report generation in progress, improving user experience by providing visual feedback during processing.
+4. **Gene Selection**: Users can choose between pre-defined gene sets (ALS Genes, ACMG Genes) via radio buttons or input a custom gene list using a text box.
+5. **Ethnicity and Variant Filters**: Allows filtering by ethnicity (e.g., European Ancestry >= 85%) and options to include or exclude synonymous and upstream/downstream variants.
+6. **Interactive Help and About Menus**: Includes Help and About sections with easy-to-read light blue backgrounds and left-aligned text. A version log is also provided in the Help menu to track updates and changes.
+7. **Report Summary and Visualization**: After report generation, the application presents a summary page showing applied filters, total variants, total samples, number of genes, and a pie chart visualization of variant types distribution.
+8. **Error Handling**: Robust error handling with specific and informative error messages for smoother troubleshooting and user assistance.
+9. **Logging Capabilities**: Detailed logging is enabled to track application behavior, report generation progress, and to assist in debugging or auditing.
+10. **Tooltips for Gene Information**: Provides tooltips displaying detailed gene information, improving user understanding during the selection process.
+11. **Comprehensive Report Generation**: The application supports generating detailed reports with multiple filters and settings, ensuring flexible and customizable output for users.
+12. **Customizable Gene and Sample Selection**: Offers users the ability to select predefined datasets (AnswerALS) or input custom selections for more granular control over report contents.
+13. **Version Log**: A built-in version log that documents changes and enhancements across different versions of the application for easy reference.
+
+These features are designed to enhance user experience, provide flexibility, and ensure that reports are generated efficiently with the desired level of detail.
+
+
 ## Packages
 
 - **PyQt5**: For building the GUI.
