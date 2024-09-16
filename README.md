@@ -1,65 +1,53 @@
-# variant_reports.py
-- **Created:** Nov 23, 2021
-- **Modified:** Feb 3, 2022, May 13, 2024, September 15, 2024
-- **Authors:**
-  - Leandro Lima <leandro.lima@gladstone.ucsf.edu>
-  - Stacia Wyman <staciawyman@berkeley.edu>
-  - Dillon Shearer <dillon@onpointsci.com>
+# VariantReportApp
 
-## Version
+## Project Overview
 
-**Current version:** 2.0.0
+VariantReportApp is a GUI-based application built using PyQt5, designed to generate ALS WGS SNV reports from provided data files. The application integrates complex transformations, including case/control calculations, ethnicity handling, ClinVar, InterVar, and in silico predictions. The output is a comprehensive Excel report that includes multiple sheets, formulas, textboxes, and metadata/annotations such as ALSoD genes.
 
-## Overview
+## Transformations
 
-This script generates ALS WGS SNV reports by leveraging PyQt for an interactive GUI experience. It includes features such as:
+- **Case/Control Calculations:** The tool performs statistical calculations to compare case and control groups based on input data.
+- **Ethnicity Handling:** Transformation logic includes handling ethnicities from provided metadata.
+- **ClinVar and InterVar:** Variants are filtered based on ClinVar and InterVar significance scores.
+- **In Silico Predictions:** The application evaluates damaging variant scores from in silico tools.
 
-- Selecting genes (ALS, ACMG, or custom)
-- Choosing samples (AnswerALS)
-- Filtering by synonymous SNVs, ethnicities, and upstream/downstream variants
-- Multiple functionalities for generating variant reports and downloading them as Excel files.
+## UI Overview
 
-## Dependencies
+The application features a user-friendly graphical interface built with PyQt5. It includes several pages:
+1. **Report Generation:** Users can input the report title, choose gene sets (ALS Genes, ACMG Genes, or custom), select sample types, and apply various filters like synonymous SNVs and ethnicity.
+2. **Summary Page:** Displays the applied filters and summary statistics, such as total variants, total samples, and the number of genes. A pie chart visualizes the variant type distribution.
 
-- Python 3.x
-- pandas
-- numpy
-- PyQt5
-- pytz
-- logging
+## Packages
 
-Install dependencies:
+- **PyQt5**: For building the GUI.
+- **Pandas**: For data manipulation.
+- **Numpy**: For numerical operations.
+- **Matplotlib**: For generating visualizations.
+- **XlsxWriter**: For exporting the report to Excel.
 
-    pip install -r requirements.txt
+## Running the Application
 
-## Features
-
-- **Interactive GUI**: Built with PyQt5, the app allows users to select genes, samples, and variants through a graphical interface.
-- **ALS and ACMG Gene Selections**: Offers pre-loaded ALS and ACMG gene lists with the ability to input custom genes.
-- **Variant Filtering**: Provides options to filter out synonymous SNVs and include upstream/downstream variants.
-- **Report Generation**: Compiles variant data into an Excel report with multiple sheets, including ClinVar, InterVar, and damaging variant data.
-
-## Files Used
-
-- ALS genes: `./data/ALS_genes.txt`
-- ACMG genes: `./data/ACMG_genes.txt`
-- Variant report: `./data/AALS_937_exonic_report.txt.gz`
-- Metadata: `./data/answer_metadata.csv`
-- ALSOD genes: `./data/alsod_genes.csv`
-- Data dictionary: `./data/data_dictionary.txt`
-
-## How to Use
-
-1. Run the app:
-
+To run the application:
+1. Ensure all dependencies are installed by running:
+    ```bash
+    pip install PyQt5 pandas numpy matplotlib xlsxwriter
+    ```
+2. Run the `variant_reports.py` script using Python:
+    ```bash
     python variant_reports.py
+    ```
 
-2. Select options for genes, samples, and variants.
-3. Generate the report by clicking on the "Create report" button.
-4. View or save the generated Excel report with multiple sheets for detailed analysis.
+## Directory Structure
 
-## GUI Features
+The application expects certain files to be in the following locations:
+- `./data/ALS_genes.txt`: A list of ALS genes.
+- `./data/ACMG_genes.txt`: A list of ACMG genes.
+- `./data/AALS_937_exonic_report.txt.gz`: The exonic variant report.
+- `./data/answer_metadata.csv`: Metadata for Answer ALS.
+- `./data/alsod_genes.csv`: A file containing ALSoD genes.
+- `./data/data_dictionary.txt`: A file containing the data dictionary for the generated reports.
+- `./images/logo.png`: The logo for the application.
 
-- **Help Menu**: Provides access to the About section and documentation.
-- **Customizable Inputs**: Title inputs, gene selection, and sample selection can all be customized by the user.
-- **Live Background**: The app supports a live background and styled UI with a purple theme.
+## Conclusion
+
+VariantReportApp is designed to provide researchers with a streamlined tool for generating comprehensive SNV reports based on ALS WGS data, offering advanced filtering options and useful visualizations.
