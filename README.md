@@ -1,3 +1,4 @@
+
 # VariantReportApp
 
 ## Project Overview
@@ -10,6 +11,7 @@ VariantReportApp is a GUI-based application built using PyQt5, designed to gener
 - **Ethnicity Handling:** Transformation logic includes handling ethnicities from provided metadata.
 - **ClinVar and InterVar:** Variants are filtered based on ClinVar and InterVar significance scores.
 - **In Silico Predictions:** The application evaluates damaging variant scores from in silico tools.
+- **C9orf72 and ATXN2 Filters:** Special filtering for C9orf72 and ATXN2 expansion samples.
 
 ## UI Overview
 
@@ -39,15 +41,48 @@ To run the application:
 
 ## Directory Structure
 
-The application expects certain files to be in the following locations:
-- `./data/ALS_genes.txt`: A list of ALS genes.
-- `./data/ACMG_genes.txt`: A list of ACMG genes.
-- `./data/AALS_937_exonic_report.txt.gz`: The exonic variant report.
-- `./data/answer_metadata.csv`: Metadata for Answer ALS.
-- `./data/alsod_genes.csv`: A file containing ALSoD genes.
-- `./data/data_dictionary.txt`: A file containing the data dictionary for the generated reports.
-- `./images/logo.png`: The logo for the application.
+The application relies on a well-defined directory structure to ensure all necessary files are present. Below is the expected directory structure:
+
+```
+VariantReportApp/
+│
+├── data/
+│   ├── ALS_genes.txt                    # List of ALS genes
+│   ├── ACMG_genes.txt                   # List of ACMG genes
+│   ├── AALS_937_exonic_report.txt.gz     # Exonic variant report
+│   ├── answer_metadata.csv               # Metadata for Answer ALS
+│   ├── alsod_genes.csv                   # ALSoD genes data
+│   ├── data_dictionary.txt               # Data dictionary for generated reports
+│
+├── images/
+│   ├── logo.png                          # Application logo
+│   ├── spinner.gif                       # Loading spinner GIF
+│   ├── background.jpeg                   # Background image
+│
+├── log/
+│   ├── report_generation_YYYY-MM-DD_HHMM.log   # Generated logs for each report
+│
+├── reports/
+│   ├── Example_Report_2024-09-16.xlsx    # Generated reports
+│
+└── variant_reports.py                    # Main Python script
+```
+
+## Files Description
+
+1. **ALS_genes.txt**: A text file containing the list of ALS genes used in the report.
+2. **ACMG_genes.txt**: A text file with ACMG gene listings, useful for comparison and selection.
+3. **AALS_937_exonic_report.txt.gz**: The main compressed variant file to be processed.
+4. **answer_metadata.csv**: Metadata file containing subject information, ancestry data, and more.
+5. **alsod_genes.csv**: ALSoD genes data used in the report generation.
+6. **data_dictionary.txt**: A text-based dictionary explaining the various columns and metrics used in the reports.
+7. **logo.png**: The application's logo, displayed on the GUI.
+8. **spinner.gif**: A loading spinner shown during report generation.
+9. **background.jpeg**: Background image used in the application for aesthetic purposes.
+10. **variant_reports.py**: The main Python script, containing the logic for the application.
+11. **log/report_generation_*.log**: Log files generated during the report creation process.
+12. **reports/**: Directory containing generated Excel reports.
 
 ## Conclusion
 
-VariantReportApp is designed to provide researchers with a streamlined tool for generating comprehensive SNV reports based on ALS WGS data, offering advanced filtering options and useful visualizations.
+VariantReportApp is designed to provide researchers with a streamlined tool for generating comprehensive SNV reports based on ALS WGS data. It offers advanced filtering options and useful visualizations. The tool is designed for scalability and can be easily extended with additional features or data inputs.
