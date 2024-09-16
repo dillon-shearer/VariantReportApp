@@ -23,7 +23,7 @@ from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QVBoxLayout, QLabel, QLineEdit,
     QRadioButton, QCheckBox, QTextEdit, QPushButton, QGroupBox, QButtonGroup,
     QWidget, QMessageBox, QGraphicsDropShadowEffect, QToolTip,
-    QAction, QHBoxLayout, QStackedWidget, QScrollArea, QSizePolicy
+    QAction, QHBoxLayout, QStackedWidget, QFrame, QDialog
 )
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -643,6 +643,52 @@ class VariantReportApp(QMainWindow):
                 <p><strong>Variants:</strong> Choose whether to include synonymous variants.</p>
                 <p><strong>Ethnicities:</strong> Optionally filter by ethnicity (e.g., European Ancestry >= 85%).</p>
             </div>
+        </div>
+        """.format(resource_path('./images/logo.png'))
+
+        # Create a custom QDialog for the help window
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Help")
+        dialog.setMinimumSize(500, 600)
+
+        # Set layout for the dialog
+        layout = QVBoxLayout()
+
+        # Add the help text
+        help_label = QLabel()
+        help_label.setTextFormat(Qt.RichText)
+        help_label.setText(help_text)
+        help_label.setWordWrap(True)
+        layout.addWidget(help_label)
+
+        # Add a collapsible version log
+        version_log_button = QPushButton("Show Version Log")
+        version_log_button.setStyleSheet("""
+            font-size: 16px; 
+            padding: 8px; 
+            text-align: left; 
+            font-weight: bold;  /* Make the text bold */
+            text-align: center;  /* Center the text */
+            background-color: #ADD8E6;  /* Light blue background */
+            color: black;
+            border: 1px solid black;
+        """)
+        layout.addWidget(version_log_button)
+
+        # Create a QTextEdit for the version log content (or QLabel for simple text)
+        version_log_content = QTextEdit()
+        version_log_content.setReadOnly(True)
+        version_log_content.setFrameStyle(QFrame.NoFrame)
+        version_log_content.setVisible(False)  # Initially hidden
+        version_log_content.setStyleSheet("""
+            font-size: 14px; 
+            color: black; 
+            background-color: #ADD8E6;  /* Light blue background */
+            border: none;
+        """)
+
+        # Set the version log content
+        version_log_content.setHtml("""
             <h3 style="text-align: left; color: black;"><u>Version Log</u></h3>
             <div style="text-align: left;">
                 <p><strong>v2.0.0 (September 15, 2024) - Dillon Shearer:</strong></p>
@@ -659,15 +705,26 @@ class VariantReportApp(QMainWindow):
                     <li>Initial release with core functionality for report generation</li>
                 </ul>
             </div>
-        </div>
-        """.format(resource_path('./images/logo.png'))
+        """)
 
-        msg = QMessageBox(self)
-        msg.setWindowTitle("Help")
-        msg.setStyleSheet("""
-            QMessageBox {
+        # Add the version log to the layout
+        layout.addWidget(version_log_content)
+
+        # Connect the button to show/hide the version log
+        def toggle_version_log():
+            if version_log_content.isVisible():
+                version_log_content.setVisible(False)
+                version_log_button.setText("Show Version Log")
+            else:
+                version_log_content.setVisible(True)
+                version_log_button.setText("Hide Version Log")
+
+        version_log_button.clicked.connect(toggle_version_log)
+
+        # Apply the custom style to the dialog
+        dialog.setStyleSheet("""
+            QDialog {
                 background-color: #ADD8E6;  /* Light blue background */
-                color: black;
                 font-family: Arial;
             }
             QLabel {
@@ -675,7 +732,7 @@ class VariantReportApp(QMainWindow):
                 font-size: 14px;
             }
             QPushButton {
-                background-color: #ADD8E6;  /* Match background */
+                background-color: #ADD8E6;  /* Light blue background */
                 color: black;
                 padding: 5px 10px;
                 border: 1px solid black;
@@ -684,8 +741,12 @@ class VariantReportApp(QMainWindow):
                 background-color: #88B0C8;  /* Slightly darker shade for hover effect */
             }
         """)
-        msg.setText(help_text)
-        msg.exec_()
+
+        # Set the layout to the dialog
+        dialog.setLayout(layout)
+
+        # Show the dialog
+        dialog.exec_()
 
     def update_summary_visuals(self):
         """
