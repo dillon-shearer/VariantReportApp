@@ -36,7 +36,7 @@ To run the application:
     ```
 2. Run the `variant_reports.py` script using Python:
     ```bash
-    python variant_reports.py
+    python variant_reports.pyw
     ```
 
 ## Directory Structure
