@@ -158,7 +158,7 @@ class VariantReportApp(QMainWindow):
         self.gene_button_group = QButtonGroup()
 
         # Set tooltip font size to 14
-        QToolTip.setFont(QFont('Helvetica', 14))
+        QToolTip.setFont(QFont('Arial', 14))
         
         # Read gene lists for tooltips
         with open(als_gene_file, 'r') as f:
